@@ -1,5 +1,6 @@
 package xyz.colmmurphy.colmmurphyxyzbackend.spotify
 
+import com.adamratzman.spotify.models.Track
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -13,12 +14,17 @@ class SpotifyController(
 ) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    @GetMapping("/api/randomNumber")
-    fun getRandomNumber(): ResponseEntity<String> {
-        return ResponseEntity.ok(service.getRandomNumber().toString())
+    @GetMapping("/api/spotify/status")
+    suspend fun getStatus(): ResponseEntity<SpotifyStatusResponseEntity> {
+        val status = service.getStatus()
+        return if (status.available) {
+            ResponseEntity.ok(status)
+        } else {
+            ResponseEntity.status(503).body(status)
+        }
     }
 
-    @GetMapping("/spotifycallback")
+    @GetMapping("/api/spotify/callback")
     suspend fun spotifyCallback(@RequestParam("code") code: String): ResponseEntity<String> {
         log.info("Received callback with $code")
         val res = service.createClientApi(code)
@@ -28,9 +34,15 @@ class SpotifyController(
         }
     }
 
-    @GetMapping("/api/toptracks")
+    @GetMapping("/api/spotify/toptracks")
     suspend fun getTopTracks(): ResponseEntity<List<String>> {
         val tracks = service.getTopTracks()
+        return ResponseEntity.ok(tracks)
+    }
+
+    @GetMapping("/api/spotify/recenttracks")
+    suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<Track>> {
+        val tracks = service.getRecentTracks(limit)
         return ResponseEntity.ok(tracks)
     }
 }
