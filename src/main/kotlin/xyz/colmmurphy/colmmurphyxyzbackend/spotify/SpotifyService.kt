@@ -11,7 +11,7 @@ import xyz.colmmurphy.colmmurphyxyzbackend.AppConfiguration
 @Service
 class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyService {
 
-    private lateinit var api: SpotifyClientApi
+    private var spotifyApi: SpotifyClientApi? = null
 
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -28,13 +28,13 @@ class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyS
     }
 
     override fun getStatus(): SpotifyStatusResponseEntity {
-        if (!::api.isInitialized) {
+        if (spotifyApi == null) {
             return SpotifyStatusResponseEntity(
                 available = false,
                 reason = "Spotify client not initialized"
             )
         }
-        if (api.token.shouldRefresh()) {
+        if (spotifyApi!!.token.shouldRefresh()) {
             return SpotifyStatusResponseEntity(
                 available = false,
                 reason = "Spotify token expired"
@@ -44,32 +44,34 @@ class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyS
     }
 
     override suspend fun createClientApi(authCode: String): Result<String> {
-        api = spotifyClientApi(
+        spotifyApi = spotifyClientApi(
             clientId = appConfiguration.clientId,
             clientSecret = appConfiguration.clientSecret,
             redirectUri = appConfiguration.redirectUri,
             authorization = SpotifyUserAuthorization(authorizationCode = authCode)
         ).build()
         log.info("Created spotify client")
-        return Result.success("Created spotify client. Token expires in ${api.token.expiresIn} seconds")
+        return Result.success("Created spotify client. Token expires in ${spotifyApi!!.token.expiresIn} seconds")
     }
 
     override suspend fun getTopTracks(): List<String> {
-        val foo = api.personalization.getTopTracks(limit = 5).items.map { it.name }
+        val foo = spotifyApi!!.personalization.getTopTracks(limit = 5).items.map { it.name }
         log.info(foo.joinToString("\n"))
         return foo
     }
 
-    override suspend fun getRecentTracks(limit: Int): List<PlayHistory> {
-        val response = api.player.getRecentlyPlayed(limit)
-        return response.items.map { PlayHistory(it.playedAt, it.track) }
+    override suspend fun getRecentTracks(limit: Int): List<PlayHistoryDto> {
+        log.info("GET RECENT {}", spotifyApi == null)
+        val response = spotifyApi!!.player.getRecentlyPlayed(limit)
+        return response.items.map { PlayHistoryDto(it.playedAt, TrackDto.fromModel(it.track)) }
     }
 
-    override suspend fun getCurrentlyPlayingTrack(): Track? {
-        val response = api.player.getCurrentlyPlaying(additionalTypes = listOf(CurrentlyPlayingType.Track))
+    override suspend fun getCurrentlyPlayingTrack(): TrackDto? {
+        val response = spotifyApi!!.player.getCurrentlyPlaying(additionalTypes = listOf(CurrentlyPlayingType.Track))
         if (response?.currentlyPlayingType != CurrentlyPlayingType.Track) {
             return null
         }
-        return response.item as Track?
+        val track = response.item as Track? ?: return null
+        return TrackDto.fromModel(track)
     }
 }

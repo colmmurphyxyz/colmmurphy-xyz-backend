@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
+@CrossOrigin(origins = ["*"])
 @RestController
 class SpotifyController(
     @Autowired private val service: ISpotifyService
@@ -17,6 +18,7 @@ class SpotifyController(
 
     @GetMapping("/api/spotify/status")
     suspend fun getStatus(): ResponseEntity<SpotifyStatusResponseEntity> {
+        log.info("get status")
         val status = service.getStatus()
         return if (status.available) {
             ResponseEntity.ok(status)
@@ -41,16 +43,14 @@ class SpotifyController(
         return ResponseEntity.ok(tracks)
     }
 
-    @CrossOrigin(origins = ["*"])
     @GetMapping("/api/spotify/recenttracks")
-    suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistory>> {
+    suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistoryDto>> {
         val tracks = service.getRecentTracks(limit)
         return ResponseEntity.ok(tracks)
     }
 
-    @CrossOrigin(origins = ["*"])
     @GetMapping("/api/spotify/currentlyplaying")
-    suspend fun getCurrentlyPlayingTrack(): ResponseEntity<Track?> {
+    suspend fun getCurrentlyPlayingTrack(): ResponseEntity<TrackDto?> {
         val track = service.getCurrentlyPlayingTrack()
         return if (track != null) {
             ResponseEntity.ok(track)

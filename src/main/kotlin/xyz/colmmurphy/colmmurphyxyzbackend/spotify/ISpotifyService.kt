@@ -6,6 +6,6 @@ interface ISpotifyService {
     suspend fun createClientApi(authCode: String): Result<String>
     fun getStatus(): SpotifyStatusResponseEntity
     suspend fun getTopTracks(): List<String>
-    suspend fun getRecentTracks(limit: Int): List<PlayHistory>
-    suspend fun getCurrentlyPlayingTrack(): Track?
+    suspend fun getRecentTracks(limit: Int): List<PlayHistoryDto>
+    suspend fun getCurrentlyPlayingTrack(): TrackDto?
 }
