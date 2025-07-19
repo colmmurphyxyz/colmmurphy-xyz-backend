@@ -21,6 +21,7 @@
             kotlin
           ];
           shellHook = ''
+            export JAVA_HOME=dirname $(dirname $(which java))
             echo "Activated"
           '';
         };
