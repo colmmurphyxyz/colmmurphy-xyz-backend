@@ -1,6 +1,7 @@
 package xyz.colmmurphy.colmmurphyxyzbackend.spotify
 
 import com.adamratzman.spotify.*
+import com.adamratzman.spotify.models.CurrentlyPlayingType
 import com.adamratzman.spotify.models.Track
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -18,6 +19,7 @@ class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyS
         val url: String = getSpotifyAuthorizationUrl(
             SpotifyScope.UserTopRead,
             SpotifyScope.UserReadRecentlyPlayed,
+            SpotifyScope.UserReadCurrentlyPlaying,
             clientId = appConfiguration.clientId!!,
             redirectUri = appConfiguration.redirectUri!!,
         )
@@ -58,8 +60,16 @@ class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyS
         return foo
     }
 
-    override suspend fun getRecentTracks(limit: Int): List<Track> {
+    override suspend fun getRecentTracks(limit: Int): List<PlayHistory> {
         val response = api.player.getRecentlyPlayed(limit)
-        return response.items.map { it.track }
+        return response.items.map { PlayHistory(it.playedAt, it.track) }
+    }
+
+    override suspend fun getCurrentlyPlayingTrack(): Track? {
+        val response = api.player.getCurrentlyPlaying(additionalTypes = listOf(CurrentlyPlayingType.Track))
+        if (response?.currentlyPlayingType != CurrentlyPlayingType.Track) {
+            return null
+        }
+        return response.item as Track?
     }
 }

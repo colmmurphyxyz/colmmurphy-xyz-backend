@@ -4,6 +4,7 @@ import com.adamratzman.spotify.models.Track
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -40,9 +41,21 @@ class SpotifyController(
         return ResponseEntity.ok(tracks)
     }
 
+    @CrossOrigin(origins = ["*"])
     @GetMapping("/api/spotify/recenttracks")
-    suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<Track>> {
+    suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistory>> {
         val tracks = service.getRecentTracks(limit)
         return ResponseEntity.ok(tracks)
+    }
+
+    @CrossOrigin(origins = ["*"])
+    @GetMapping("/api/spotify/currentlyplaying")
+    suspend fun getCurrentlyPlayingTrack(): ResponseEntity<Track?> {
+        val track = service.getCurrentlyPlayingTrack()
+        return if (track != null) {
+            ResponseEntity.ok(track)
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 }
