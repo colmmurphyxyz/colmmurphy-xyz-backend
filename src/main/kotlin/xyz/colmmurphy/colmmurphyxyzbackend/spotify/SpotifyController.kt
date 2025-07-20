@@ -52,10 +52,6 @@ class SpotifyController(
     @GetMapping("/api/spotify/currentlyplaying")
     suspend fun getCurrentlyPlayingTrack(): ResponseEntity<TrackDto?> {
         val track = service.getCurrentlyPlayingTrack()
-        return if (track != null) {
-            ResponseEntity.ok(track)
-        } else {
-            ResponseEntity.notFound().build()
-        }
+        return ResponseEntity.ok(track)
     }
 }
