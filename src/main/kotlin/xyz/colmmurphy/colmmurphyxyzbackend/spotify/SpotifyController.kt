@@ -37,12 +37,6 @@ class SpotifyController(
         }
     }
 
-    @GetMapping("/api/spotify/toptracks")
-    suspend fun getTopTracks(): ResponseEntity<List<String>> {
-        val tracks = service.getTopTracks()
-        return ResponseEntity.ok(tracks)
-    }
-
     @GetMapping("/api/spotify/recenttracks")
     suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistoryDto>> {
         val tracks = service.getRecentTracks(limit)
