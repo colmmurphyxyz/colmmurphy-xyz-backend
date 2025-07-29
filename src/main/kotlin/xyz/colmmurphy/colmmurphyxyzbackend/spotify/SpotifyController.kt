@@ -2,12 +2,14 @@ package xyz.colmmurphy.colmmurphyxyzbackend.spotify
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.CacheControl
 import org.springframework.http.ResponseEntity
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.TimeUnit
 
 @CrossOrigin(origins = ["*"])
 @RestController
@@ -61,15 +63,23 @@ class SpotifyController(
     suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistoryDto>> {
         if (limit == 10 && cachedTenRecentTracks != null) {
             log.info("Returning cached value for /recenttracks")
-            return ResponseEntity.ok(cachedTenRecentTracks)
+            return ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
+                .body(cachedTenRecentTracks)
         }
-        // fall back if no cached value
         val tracks = service.getRecentTracks(limit)
-        return ResponseEntity.ok(tracks)
+        return ResponseEntity
+            .ok()
+            .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
+            .body(tracks)
     }
 
     @GetMapping("/api/spotify/currentlyplaying")
     suspend fun getCurrentlyPlayingTrack(): ResponseEntity<TrackDto?> {
-        return ResponseEntity.ok(cachedCurrentlyPlayingTrack)
+        return ResponseEntity
+            .ok()
+            .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
+            .body(cachedCurrentlyPlayingTrack)
     }
 }
