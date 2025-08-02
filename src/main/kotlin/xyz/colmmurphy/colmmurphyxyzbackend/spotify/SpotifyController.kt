@@ -1,5 +1,6 @@
 package xyz.colmmurphy.colmmurphyxyzbackend.spotify
 
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.CacheControl
@@ -21,21 +22,27 @@ class SpotifyController(
     private var cachedCurrentlyPlayingTrack: TrackDto? = null
     private var cachedRecentTracks: List<PlayHistoryDto>? = null
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Scheduled(fixedRate = 2 * 60 * 1000, initialDelay = 60 * 1000)
-    protected suspend fun updateCurrentlyPlayingCache() {
-        cachedCurrentlyPlayingTrack = null
-        service.getCurrentlyPlayingTrack()?.let {
-            log.info("updated cached value for /currentlyplaying")
-            cachedCurrentlyPlayingTrack = it
+    protected fun updateCurrentlyPlayingCache() {
+        GlobalScope.launch(Dispatchers.IO) {
+            cachedCurrentlyPlayingTrack = null
+            service.getCurrentlyPlayingTrack()?.let {
+                log.info("updated cached value for /currentlyplaying")
+                cachedCurrentlyPlayingTrack = it
+            }
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Scheduled(fixedRate = 2 * 60 * 1000, initialDelay = 60 * 1000)
-    protected suspend fun updateRecentTracks() {
-        cachedRecentTracks = null
-        val tracks = service.getRecentTracks(50)
-        cachedRecentTracks = tracks
-        log.info("Updated cached value for /recenttracks")
+    protected fun updateRecentTracks() {
+        GlobalScope.launch(Dispatchers.IO) {
+            cachedRecentTracks = null
+            val tracks = service.getRecentTracks(50)
+            cachedRecentTracks = tracks
+            log.info("Updated cached value for /recenttracks")
+        }
     }
 
     @GetMapping("/api/spotify/status")
