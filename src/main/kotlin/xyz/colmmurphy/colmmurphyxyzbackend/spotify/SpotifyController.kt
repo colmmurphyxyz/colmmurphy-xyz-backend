@@ -19,7 +19,7 @@ class SpotifyController(
     private val log = LoggerFactory.getLogger(this::class.java)
 
     private var cachedCurrentlyPlayingTrack: TrackDto? = null
-    private var cachedTenRecentTracks: List<PlayHistoryDto>? = null
+    private var cachedRecentTracks: List<PlayHistoryDto>? = null
 
     @Scheduled(fixedRate = 2 * 60 * 1000, initialDelay = 60 * 1000)
     protected suspend fun updateCurrentlyPlayingCache() {
@@ -31,10 +31,11 @@ class SpotifyController(
     }
 
     @Scheduled(fixedRate = 2 * 60 * 1000, initialDelay = 60 * 1000)
-    protected suspend fun updateTenRecentTracks() {
-        cachedTenRecentTracks = null
-        val tracks = service.getRecentTracks(10)
-        cachedTenRecentTracks = tracks
+    protected suspend fun updateRecentTracks() {
+        cachedRecentTracks = null
+        val tracks = service.getRecentTracks(50)
+        cachedRecentTracks = tracks
+        log.info("Updated cached value for /recenttracks")
     }
 
     @GetMapping("/api/spotify/status")
@@ -61,18 +62,16 @@ class SpotifyController(
 
     @GetMapping("/api/spotify/recenttracks")
     suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistoryDto>> {
-        if (limit == 10 && cachedTenRecentTracks != null) {
-            log.info("Returning cached value for /recenttracks")
-            return ResponseEntity
-                .ok()
-                .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
-                .body(cachedTenRecentTracks)
-        }
-        val tracks = service.getRecentTracks(limit)
-        return ResponseEntity
+        val responseEntity = ResponseEntity
             .ok()
             .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
-            .body(tracks)
+        val cache = cachedRecentTracks
+        if (cache == null || limit > cache.size) {
+            responseEntity.body(service.getRecentTracks(limit))
+        } else {
+            responseEntity.body(cache.slice(0 until limit))
+        }
+        return responseEntity.build()
     }
 
     @GetMapping("/api/spotify/currentlyplaying")
