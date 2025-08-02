@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 @CrossOrigin(origins = ["*"])
@@ -21,6 +22,8 @@ class SpotifyController(
 
     @Volatile
     private var cachedCurrentlyPlayingTrack: TrackDto? = null
+    @Volatile
+    private var currentlyPlayingTrackTime = Instant.now().toEpochMilli()
 
     @Volatile
     private var cachedRecentTracks: List<PlayHistoryDto>? = null
@@ -33,6 +36,7 @@ class SpotifyController(
             service.getCurrentlyPlayingTrack()?.let {
                 log.info("updated cached value for /currentlyplaying")
                 cachedCurrentlyPlayingTrack = it
+                currentlyPlayingTrackTime = Instant.now().toEpochMilli()
             }
         }
     }
@@ -87,9 +91,18 @@ class SpotifyController(
 
     @GetMapping("/api/spotify/currentlyplaying")
     suspend fun getCurrentlyPlayingTrack(): ResponseEntity<TrackDto?> {
+        val cache = cachedCurrentlyPlayingTrack ?: return ResponseEntity.notFound().build()
+
+        val diff = Instant.now().toEpochMilli() - currentlyPlayingTrackTime
+        val isStale = diff > 120_000
+
+        if (isStale) {
+            return ResponseEntity.notFound().build()
+        }
+
         return ResponseEntity
             .ok()
             .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
-            .body(cachedCurrentlyPlayingTrack)
+            .body(cache)
     }
 }
