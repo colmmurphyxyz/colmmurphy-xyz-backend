@@ -19,7 +19,10 @@ class SpotifyController(
 ) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
+    @Volatile
     private var cachedCurrentlyPlayingTrack: TrackDto? = null
+
+    @Volatile
     private var cachedRecentTracks: List<PlayHistoryDto>? = null
 
     @OptIn(DelicateCoroutinesApi::class)
