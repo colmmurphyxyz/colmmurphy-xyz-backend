@@ -72,16 +72,17 @@ class SpotifyController(
 
     @GetMapping("/api/spotify/recenttracks")
     suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistoryDto>> {
-        val responseEntity = ResponseEntity
+        val cache = cachedRecentTracks
+        return ResponseEntity
             .ok()
             .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
-        val cache = cachedRecentTracks
-        if (cache == null || limit > cache.size) {
-            responseEntity.body(service.getRecentTracks(limit))
-        } else {
-            responseEntity.body(cache.slice(0 until limit))
-        }
-        return responseEntity.build()
+            .body(
+                if (cache == null || limit > cache.size) {
+                    service.getRecentTracks(limit)
+                } else {
+                    cache.slice(0 until limit)
+                }
+            )
     }
 
     @GetMapping("/api/spotify/currentlyplaying")
