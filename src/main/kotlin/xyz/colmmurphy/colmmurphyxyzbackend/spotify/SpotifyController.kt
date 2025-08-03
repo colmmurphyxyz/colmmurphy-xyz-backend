@@ -97,7 +97,7 @@ class SpotifyController(
         val isStale = diff > 120_000
 
         if (isStale) {
-            return ResponseEntity.notFound().build()
+            return ResponseEntity.noContent().build()
         }
 
         return ResponseEntity
