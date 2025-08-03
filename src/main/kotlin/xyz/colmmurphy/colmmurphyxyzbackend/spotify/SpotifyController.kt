@@ -91,7 +91,7 @@ class SpotifyController(
 
     @GetMapping("/api/spotify/currentlyplaying")
     suspend fun getCurrentlyPlayingTrack(): ResponseEntity<TrackDto?> {
-        val cache = cachedCurrentlyPlayingTrack ?: return ResponseEntity.notFound().build()
+        val cache = cachedCurrentlyPlayingTrack ?: return ResponseEntity.noContent().build()
 
         val diff = Instant.now().toEpochMilli() - currentlyPlayingTrackTime
         val isStale = diff > 120_000
