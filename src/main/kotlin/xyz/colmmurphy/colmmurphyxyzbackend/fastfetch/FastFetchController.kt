@@ -20,10 +20,8 @@ class FastFetchController(
         log.info("GET /api/fastfetch/")
         val ffText = service.getFastFetch()
         val parser = FastFetchParser()
-        val out = parser.parseFastFetch(ffText)
-        val html = """
-        <span style="color: red">This is HTML</span>
-    """.trimIndent()
+
+        val html = parser.parseFastFetch(ffText)
 
         return ResponseEntity.ok()
             .contentType(MediaType.TEXT_HTML)
