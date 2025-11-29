@@ -1,11 +1,16 @@
 package xyz.colmmurphy.colmmurphyxyzbackend.fastfetch
 
-class FastFetchParser : IFastFetchParser {
+import org.slf4j.LoggerFactory
 
-    override fun parseFastFetch(input: CharArray): String {
-        for (c in input) {
-            println()
-        }
+class FastFetchParser : IFastFetchParser {
+    private val log = LoggerFactory.getLogger(this::class.java)
+
+    override fun parseFastFetch(input: String): String {
+        val lines = input.lines()
+        val separatorIndex = lines.indexOfFirst { it.startsWith("----") }
+
+        val logoRaw = lines.take(separatorIndex).joinToString("\n")
+        val infoRaw = lines.drop(separatorIndex + 1).joinToString("\n")
 
         return "Not Implemented"
     }

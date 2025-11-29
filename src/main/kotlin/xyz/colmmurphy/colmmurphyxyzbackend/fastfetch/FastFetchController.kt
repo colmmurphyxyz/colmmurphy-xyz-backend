@@ -17,7 +17,10 @@ class FastFetchController(
 
     @GetMapping("/api/fastfetch")
     suspend fun fastfetch(): ResponseEntity<String> {
-        log.trace("GET /api/fastfetch/")
+        log.info("GET /api/fastfetch/")
+        val ffText = service.getFastFetch()
+        val parser = FastFetchParser()
+        val out = parser.parseFastFetch(ffText)
         val html = """
         <span style="color: red">This is HTML</span>
     """.trimIndent()
