@@ -24,7 +24,7 @@ class FastFetchController(
         val html = parser.parseFastFetch(ffText)
 
         return ResponseEntity.ok()
-            .contentType(MediaType.TEXT_HTML)
+            .contentType(MediaType.parseMediaType("text/html; charset=UTF-8"))
             .body(html)
     }
 }
