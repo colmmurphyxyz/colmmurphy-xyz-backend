@@ -13,7 +13,7 @@ class FastFetchParser : IFastFetchParser {
     override fun parseFastFetch(input: String): String {
         val (logoRaw, infoRaw) = input.split("\u001B[?7l")
 
-        return createHTML(prettyPrint = true).div {
+        return createHTML(prettyPrint = false).div {
             style {
                 +"""
                 .ff-bold { font-weight: bold; }
@@ -49,8 +49,12 @@ class FastFetchParser : IFastFetchParser {
                 .ff-bg-bright-white { background-color: #f6f5f4; }
                 """.trimIndent()
             }
-            textSegmentsToHtml(AnsiParser(logoRaw).parseAnsiText())()
-            textSegmentsToHtml(AnsiParser(infoRaw).parseAnsiText())()
+            div {
+                textSegmentsToHtml(AnsiParser(logoRaw).parseAnsiText())()
+            }
+            div {
+                textSegmentsToHtml(AnsiParser(infoRaw).parseAnsiText())()
+            }
         }
     }
 }

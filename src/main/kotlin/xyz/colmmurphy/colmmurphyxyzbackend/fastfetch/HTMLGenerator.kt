@@ -38,10 +38,8 @@ fun textSegmentToHtml(segment: TextSegment): FlowContent.() -> Unit {
 
 fun textSegmentsToHtml(segments: List<TextSegment>): FlowContent.() -> Unit {
     return {
-        div {
-            segments.forEach {
-                textSegmentToHtml(it)()
-            }
+        segments.forEach {
+            textSegmentToHtml(it)()
         }
     }
 }
