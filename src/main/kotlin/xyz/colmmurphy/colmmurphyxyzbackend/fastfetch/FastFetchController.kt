@@ -15,10 +15,21 @@ class FastFetchController(
 ) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    @GetMapping("/api/fastfetch")
-    suspend fun fastfetch(): ResponseEntity<String> {
-        log.info("GET /api/fastfetch/")
-        val ffText = service.getFastFetch()
+    @GetMapping("/api/fastfetch/logo")
+    suspend fun fastfetchLogo(): ResponseEntity<String> {
+        val ffText = service.getFastFetchLogo()
+        val parser = FastFetchParser()
+
+        val html = parser.parseFastFetch(ffText)
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("text/html; charset=UTF-8"))
+            .body(html)
+    }
+
+    @GetMapping("/api/fastfetch/text")
+    suspend fun fastfetchText(): ResponseEntity<String> {
+        val ffText = service.getFastFetchText()
         val parser = FastFetchParser()
 
         val html = parser.parseFastFetch(ffText)
