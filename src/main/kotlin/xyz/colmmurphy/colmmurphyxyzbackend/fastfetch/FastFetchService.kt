@@ -13,8 +13,7 @@ class FastFetchService : IFastFetchService {
             it.readText()
         }
         process.waitFor()
-        println(output)
-        return output
+        return output.substringBefore("\u001b[1G")
     }
 
     override suspend fun getFastFetchText(): String {
@@ -26,7 +25,6 @@ class FastFetchService : IFastFetchService {
             it.readText()
         }
         process.waitFor()
-        println(output)
         return output
     }
 }
