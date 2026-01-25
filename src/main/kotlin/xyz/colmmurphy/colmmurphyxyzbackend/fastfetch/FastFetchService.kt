@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service
 @Service
 class FastFetchService : IFastFetchService {
     override suspend fun getFastFetchLogo(): String {
-        val process = ProcessBuilder("script", "-q", "-c", "fastfetch --structure logo")
+        val process = ProcessBuilder("script", "-I", "/dev/null", "-q", "-c", "fastfetch --structure logo")
             .redirectErrorStream(true)
             .start()
 
@@ -17,7 +17,7 @@ class FastFetchService : IFastFetchService {
     }
 
     override suspend fun getFastFetchText(): String {
-        val process = ProcessBuilder("script", "-q", "-c", "fastfetch --logo none")
+        val process = ProcessBuilder("script", "-I", "/dev/null", "-q", "-c", "fastfetch --logo none")
             .redirectErrorStream(true)
             .start()
 
