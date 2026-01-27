@@ -52,32 +52,15 @@
           '';
         };
 
-        packages.default =
-          let
-            foo = 123;
-            # gradle = pkgs.gradleFromWrapper {
-            #   wrapperPropertiesPath = ./gradle/wrapper/gradle-wrapper.properties;
-            #   defaultJava = java;
-            # };
-          in
-          pkgs.buildGradleApplication {
-            pname = "hello-world";
-            version = "1.0.0";
-            src = ./.;
-            meta = with build-gradle-application.lib; {
-              description = "Hello World Application";
-            };
-            buildTask = "bootJar installDist";
+        packages.default = pkgs.buildGradleApplication {
+          pname = "colmmurphyxyz-backend";
+          version = "1.0.0";
+          src = ./.;
+          meta = with build-gradle-application.lib; {
+            description = "Backend server for api.colmmurphy.xyz";
           };
-
-        # packages.default = pkgs.buildGradleApplication {
-        # pname = "hello-world";
-        # version = "1.0.0";
-        # src = ./.;
-        # meta = with build-gradle-application.lib; {
-        #   description = "Hello World Application";
-        # };
-        # };
+          buildTask = "bootJar installDist";
+        };
       }
     );
 }
