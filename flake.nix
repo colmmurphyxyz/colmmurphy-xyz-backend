@@ -52,7 +52,7 @@
           '';
         };
 
-        packages.default = pkgs.buildGradleApplication {
+        packages.colmmurphyxyz-backend = pkgs.buildGradleApplication {
           pname = "colmmurphyxyz-backend";
           version = "1.0.0";
           src = ./.;
