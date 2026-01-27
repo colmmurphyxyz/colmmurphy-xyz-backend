@@ -1,22 +1,33 @@
 {
-  description = "Developer Environment.";
+  description = "colmmurphy.xyz backend";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    build-gradle-application.url = "github:raphiz/buildGradleApplication";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils}:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      build-gradle-application,
+      flake-utils,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           inherit system;
+          overlays = [ build-gradle-application.overlays.default ];
           config.allowUnfree = true;
         };
         java = pkgs.jdk21_headless;
         gradle = pkgs.gradle_9;
         kotlin = pkgs.kotlin;
-        intellij = pkgs.jetbrains.idea-community;
-      in {
+        intellij = pkgs.jetbrains.idea;
+      in
+      {
         devShells.default = pkgs.mkShell {
           name = "spring boot + kotlin dev";
           buildInputs = [
@@ -40,7 +51,33 @@
             echo "Activated"
           '';
         };
+
+        packages.default =
+          let
+            foo = 123;
+            # gradle = pkgs.gradleFromWrapper {
+            #   wrapperPropertiesPath = ./gradle/wrapper/gradle-wrapper.properties;
+            #   defaultJava = java;
+            # };
+          in
+          pkgs.buildGradleApplication {
+            pname = "hello-world";
+            version = "1.0.0";
+            src = ./.;
+            meta = with build-gradle-application.lib; {
+              description = "Hello World Application";
+            };
+            buildTask = "bootJar installDist";
+          };
+
+        # packages.default = pkgs.buildGradleApplication {
+        # pname = "hello-world";
+        # version = "1.0.0";
+        # src = ./.;
+        # meta = with build-gradle-application.lib; {
+        #   description = "Hello World Application";
+        # };
+        # };
       }
     );
 }
-
