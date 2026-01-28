@@ -62,6 +62,8 @@
           buildTask = "bootJar installDist";
         };
 
+        packages.default = self.packages.colmmurphyxyz-backend
+
         homeManagerModules.default = { config, lib, pkgs, ... }:
         let
           cfg = config.services.colmmurphyxyz-backend;
