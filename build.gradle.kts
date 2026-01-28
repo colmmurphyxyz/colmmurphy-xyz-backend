@@ -3,10 +3,15 @@ plugins {
     kotlin("plugin.spring") version "2.1.20"
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
+    application
 }
 
 group = "xyz.colmmurphy"
 version = "0.0.1-SNAPSHOT"
+
+application {
+    mainClass.set("xyz.colmmurphy.colmmurphyxyzbackend.ColmmurphyxyzBackendApplicationKt")
+}
 
 configurations {
     compileOnly {
@@ -14,8 +19,10 @@ configurations {
     }
 }
 
-repositories {
-    mavenCentral()
+configurations.all {
+    resolutionStrategy {
+        failOnNonReproducibleResolution()
+    }
 }
 
 dependencies {
@@ -41,6 +48,16 @@ dependencies {
 kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+tasks {
+    processResources {
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+    
+    processTestResources {
+        duplicatesStrategy = DuplicatesStrategy.WARN
     }
 }
 
