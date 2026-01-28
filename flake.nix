@@ -61,6 +61,72 @@
           };
           buildTask = "bootJar installDist";
         };
+
+        homeManagerModules.default = { config, lib, pkgs, ... }:
+        let
+          cfg = config.services.colmmurphyxyz-backend;
+        in
+        {
+          options.services.colmmurphyxyz-backend = {
+            enable = lib.mkEnableOption "colmmurphy.xyz Spring Boot backend";
+
+            package = lib.mkOption {
+              type = lib.types.package;
+              default = self.packages.${pkgs.system}.default;
+              description = "Backend package to run";
+            };
+
+            profile = lib.mkOption {
+              type = lib.types.str;
+              default = "prod";
+            };
+
+            javaOpts = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [];
+            };
+
+            environment = lib.mkOption {
+              type = lib.types.attrsOf lib.types.str;
+              default = { };
+              description = "Extra environment variables";
+            };
+          };
+
+          config = lib.mkIf cfg.enable {
+            home.packages = [ cfg.package ];
+
+            systemd.user.services.colmmurphyxyz-backend = {
+              Unit = {
+                Description = "colmmurphy.xyz Spring Boot backend";
+                After = [ "network.target" ];
+              };
+
+              Service = {
+                ExecStart =
+                  "${cfg.package}/bin/colmmurphyxyz-backend";
+
+                Restart = "always";
+                RestartSec = 5;
+
+                Environment =
+                  [
+                    "SPRING_PROFILES_ACTIVE=${cfg.profile}"
+                    "JAVA_OPTS=${lib.concatStringsSep " " cfg.javaOpts}"
+                  ]
+                  ++ lib.mapAttrsToList (k: v: "${k}=${v}") cfg.environment;
+
+                WorkingDirectory = "%h";
+                StandardOutput = "journal";
+                StandardError = "journal";
+              };
+
+              Install = {
+                WantedBy = [ "default.target" ];
+              };
+            };
+          };
+        };
       }
     );
 }
