@@ -54,13 +54,18 @@ class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyS
         return Result.success("Created spotify client. Token expires in ${spotifyApi!!.token.expiresIn} seconds")
     }
 
-    override suspend fun getRecentTracks(limit: Int): List<PlayHistoryDto> {
-        log.info("GET RECENT {}", spotifyApi == null)
+    override suspend fun getRecentTracks(limit: Int): List<PlayHistoryDto>? {
+        if (spotifyApi == null) {
+            return null
+        }
         val response = spotifyApi!!.player.getRecentlyPlayed(limit)
         return response.items.map { PlayHistoryDto(it.playedAt, TrackDto.fromModel(it.track)) }
     }
 
     override suspend fun getCurrentlyPlayingTrack(): TrackDto? {
+        if (spotifyApi == null) {
+            return null
+        }
         val response = spotifyApi!!.player.getCurrentlyPlaying(additionalTypes = listOf(CurrentlyPlayingType.Track))
         if (response?.currentlyPlayingType != CurrentlyPlayingType.Track) {
             return null

@@ -22,6 +22,7 @@ class SpotifyController(
 
     @Volatile
     private var cachedCurrentlyPlayingTrack: TrackDto? = null
+
     @Volatile
     private var currentlyPlayingTrackTime = Instant.now().toEpochMilli()
 
@@ -47,8 +48,10 @@ class SpotifyController(
         GlobalScope.launch(Dispatchers.IO) {
             cachedRecentTracks = null
             val tracks = service.getRecentTracks(50)
-            cachedRecentTracks = tracks
-            log.info("Updated cached value for /recenttracks")
+            if (tracks != null) {
+                cachedRecentTracks = tracks
+                log.info("Updated cached value for /recenttracks")
+            }
         }
     }
 
@@ -77,16 +80,20 @@ class SpotifyController(
     @GetMapping("/api/spotify/recenttracks")
     suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistoryDto>> {
         val cache = cachedRecentTracks
-        return ResponseEntity
-            .ok()
-            .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
-            .body(
-                if (cache == null || limit > cache.size) {
-                    service.getRecentTracks(limit)
-                } else {
-                    cache.slice(0 until limit)
-                }
-            )
+        val tracks = if (cache == null || limit > cache.size) {
+            service.getRecentTracks(limit)
+        } else cache
+
+        return if (tracks == null) {
+            ResponseEntity.internalServerError().build()
+        } else {
+            ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
+                .body(
+                    tracks.slice(0 until limit)
+                )
+        }
     }
 
     @GetMapping("/api/spotify/currentlyplaying")
