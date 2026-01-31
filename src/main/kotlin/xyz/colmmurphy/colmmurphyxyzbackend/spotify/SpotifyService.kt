@@ -7,9 +7,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import xyz.colmmurphy.colmmurphyxyzbackend.AppConfiguration
+import xyz.colmmurphy.colmmurphyxyzbackend.ntfy.AdminNotificationService
 
 @Service
-class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyService {
+class SpotifyService(private val appConfiguration: AppConfiguration, private val notificationService: AdminNotificationService) : ISpotifyService {
 
     private var spotifyApi: SpotifyClientApi? = null
 
@@ -23,8 +24,8 @@ class SpotifyService(private val appConfiguration: AppConfiguration) : ISpotifyS
             clientId = appConfiguration.clientId!!,
             redirectUri = appConfiguration.redirectUri!!,
         )
-
         log.info("Spotify auth URL: $url")
+        notificationService.sendNotification("Spotify auth URL: $url")
     }
 
     override fun getStatus(): SpotifyStatusResponseEntity {
