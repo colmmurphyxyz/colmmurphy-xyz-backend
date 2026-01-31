@@ -25,14 +25,12 @@
         java = pkgs.jdk21_headless;
         gradle = pkgs.gradle_9;
         kotlin = pkgs.kotlin;
-        intellij = pkgs.jetbrains.idea;
       in
       {
         devShells.default = pkgs.mkShell {
           name = "spring boot + kotlin dev";
           buildInputs = [
             gradle
-            intellij
             java
             kotlin
           ];
