@@ -1,6 +1,9 @@
 package xyz.colmmurphy.colmmurphyxyzbackend.spotify
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.CacheControl
@@ -10,13 +13,13 @@ import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.Instant
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
 
 @CrossOrigin(origins = ["*"])
 @RestController
 class SpotifyController(
-    @Autowired private val service: ISpotifyService
+    @Autowired private val service: ISpotifyService,
 ) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -24,7 +27,7 @@ class SpotifyController(
     private var cachedCurrentlyPlayingTrack: TrackDto? = null
 
     @Volatile
-    private var currentlyPlayingTrackTime = Instant.now().toEpochMilli()
+    private var currentlyPlayingTrackTime = Clock.System.now().toEpochMilliseconds()
 
     @Volatile
     private var cachedRecentTracks: List<PlayHistoryDto>? = null
@@ -37,7 +40,7 @@ class SpotifyController(
             service.getCurrentlyPlayingTrack()?.let {
                 log.info("updated cached value for /currentlyplaying")
                 cachedCurrentlyPlayingTrack = it
-                currentlyPlayingTrackTime = Instant.now().toEpochMilli()
+                currentlyPlayingTrackTime = Clock.System.now().toEpochMilliseconds()
             }
         }
     }
@@ -67,7 +70,9 @@ class SpotifyController(
     }
 
     @GetMapping("/api/spotify/callback")
-    suspend fun spotifyCallback(@RequestParam("code") code: String): ResponseEntity<String> {
+    suspend fun spotifyCallback(
+        @RequestParam("code") code: String,
+    ): ResponseEntity<String> {
         log.info("Received callback with $code")
 
         val res = service.createClientApi(code)
@@ -78,11 +83,16 @@ class SpotifyController(
     }
 
     @GetMapping("/api/spotify/recenttracks")
-    suspend fun getRecentTracks(@RequestParam("limit") limit: Int): ResponseEntity<List<PlayHistoryDto>> {
+    suspend fun getRecentTracks(
+        @RequestParam("limit") limit: Int,
+    ): ResponseEntity<List<PlayHistoryDto>> {
         val cache = cachedRecentTracks
-        val tracks = if (cache == null || limit > cache.size) {
-            service.getRecentTracks(limit)
-        } else cache
+        val tracks =
+            if (cache == null || limit > cache.size) {
+                service.getRecentTracks(limit)
+            } else {
+                cache
+            }
 
         return if (tracks == null) {
             ResponseEntity.internalServerError().build()
@@ -91,16 +101,16 @@ class SpotifyController(
                 .ok()
                 .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
                 .body(
-                    tracks.slice(0 until limit)
+                    tracks.slice(0 until limit),
                 )
         }
     }
 
     @GetMapping("/api/spotify/currentlyplaying")
-    suspend fun getCurrentlyPlayingTrack(): ResponseEntity<TrackDto?> {
+    suspend fun getCurrentlyPlayingTrack(): ResponseEntity<TrackDto>? {
         val cache = cachedCurrentlyPlayingTrack ?: return ResponseEntity.noContent().build()
 
-        val diff = Instant.now().toEpochMilli() - currentlyPlayingTrackTime
+        val diff = Clock.System.now().toEpochMilliseconds() - currentlyPlayingTrackTime
         val isStale = diff > 120_000
 
         if (isStale) {
