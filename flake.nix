@@ -22,8 +22,11 @@
           overlays = [ build-gradle-application.overlays.default ];
           config.allowUnfree = true;
         };
-        java = pkgs.jdk21_headless;
-        gradle = pkgs.gradle_9;
+        java = pkgs.jdk25;
+        gradle = pkgs.gradleFromWrapper {
+          wrapperPropertiesPath = ./gradle/wrapper/gradle-wrapper.properties;
+          defaultJava = pkgs.jdk25;
+        };
         kotlin = pkgs.kotlin;
       in
       {
@@ -35,7 +38,7 @@
             kotlin
           ];
           shellHook = ''
-            export JAVA_HOME=$(dirname $(dirname $(which java)))/lib/openjdk
+            export JAVA_HOME=${pkgs.jdk21}/lib/openjdk
 
             export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${
               pkgs.lib.makeLibraryPath [
