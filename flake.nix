@@ -1,7 +1,7 @@
 {
   description = "colmmurphy.xyz backend";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     build-gradle-application.url = "github:raphiz/buildGradleApplication";
     flake-utils.url = "github:numtide/flake-utils";
   };
@@ -35,7 +35,7 @@
             kotlin
           ];
           shellHook = ''
-            export JAVA_HOME=$(dirname $(dirname $(which java)))
+            export JAVA_HOME=$(dirname $(dirname $(which java)))/lib/openjdk
 
             export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${
               pkgs.lib.makeLibraryPath [
