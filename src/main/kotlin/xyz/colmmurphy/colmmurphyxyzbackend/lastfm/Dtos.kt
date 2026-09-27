@@ -1,7 +1,7 @@
 package xyz.colmmurphy.colmmurphyxyzbackend.lastfm
 
 data class RecentTracksResponseDto(
-    val recentTracks: List<LastFMRecentTrackDto>
+    val recentTracks: List<LastFMRecentTrackDto>,
 )
 
 data class LastFMRecentTrackDto(
@@ -13,5 +13,5 @@ data class LastFMRecentTrackDto(
 
 data class LastFMImageDto(
     val size: String,
-    val url: String?
+    val url: String?,
 )
