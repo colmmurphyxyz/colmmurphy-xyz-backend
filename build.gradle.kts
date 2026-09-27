@@ -38,6 +38,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     compileOnly("org.projectlombok:lombok:1.18.48")
     developmentOnly("org.springframework.boot:spring-boot-devtools:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:$springBootVersion")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
     kapt("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
     annotationProcessor("org.projectlombok:lombok:1.18.48")
@@ -51,7 +52,7 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
     }
 }
 
