@@ -2,6 +2,8 @@ HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
+gradle-intellij/
+!gradle-intellij/gradle.properties
 !**/src/main/**/build/
 !**/src/test/**/build/
 
