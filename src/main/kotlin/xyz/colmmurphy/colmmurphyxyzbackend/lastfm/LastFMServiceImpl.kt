@@ -12,20 +12,21 @@ class LastFMServiceImpl(
         return mapToResponseDto(response)
     }
 
-    private fun mapToResponseDto(model: GetRecentTracksResponse): RecentTracksResponseDto {
-        return RecentTracksResponseDto(
+    private fun mapToResponseDto(model: GetRecentTracksResponse): RecentTracksResponseDto =
+        RecentTracksResponseDto(
             model.recentTracks.tracks.map { it ->
                 LastFMRecentTrackDto(
                     artistName = it.artist.text,
                     trackName = it.name,
                     albumName = it.album.text,
-                    images = it.images.map { imageModel ->
-                        LastFMImageDto(
-                            size = imageModel.size,
-                            url = imageModel.url
-                        )
-                    })
-            }
+                    images =
+                        it.images.map { imageModel ->
+                            LastFMImageDto(
+                                size = imageModel.size,
+                                url = imageModel.url,
+                            )
+                        },
+                )
+            },
         )
-    }
 }
